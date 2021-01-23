@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/joho/godotenv"
 	"io"
@@ -34,14 +34,8 @@ type Response struct {
 	Text   string `json:"text"`
 }
 
-type Command struct {
-	FuncName string
-	Args     []string
-}
-
 func HandleRequest(ctx context.Context, e Event) {
-	BOT_TOKEN := os.Getenv("BOT_TOKEN")
-	sendMessageUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", BOT_TOKEN)
+	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
 
 	response := Response{
 		ChatId: e.Message.Chat.Id,
@@ -50,92 +44,79 @@ func HandleRequest(ctx context.Context, e Event) {
 
 	responseByteArray, err := json.Marshal(response)
 
-	resp, err := http.Post(sendMessageUrl, "application/json", bytes.NewBuffer(responseByteArray))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer resp.Body.Close()
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
 
 }
 
-func SendMessage(body io.Reader) (resp *http.Response, err error) {
-	BOT_TOKEN := os.Getenv("BOT_TOKEN")
-	sendMessageUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", BOT_TOKEN)
-	return http.Post(sendMessageUrl, "application/json", body)
-}
-
-func GetFuncName(s string) (string, error) {
-	var e error
-	e = nil
-	f := string(s[0])
-	if f != "/" {
-		e = errors.New("Function name don't start with '/'")
-		return "", e
+func HandleEvent(bot *telegrambot.Bot, e Event) {
+	switch bot.FuncName {
+	case "/echo":
+		Echo(bot, e)
+	default:
+		// freebsd, openbsd,
+		// plan9, windows...
+		InvalidCommand(bot, e)
 	}
 
-	return string(s[1:]), e
-
 }
 
-func ParseCommand(text string) (Command, error) {
-	var c Command
-	t := strings.Trim(text, " ")
-	tokens := strings.Split(t, " ")
-	rawFuncName := tokens[0]
+func Echo(bot *telegrambot.Bot, e Event) {
+	response := telegrambot.SendMessagePayload{
+		ChatId: e.Message.Chat.Id,
+		Text:   strings.Join(bot.Args, " "),
+	}
 
-	funcName, err := GetFuncName(rawFuncName)
+	responseByteArray, err := json.Marshal(response)
 
 	if err != nil {
-		return c, err
+		log.Fatal(err)
 	}
 
-	c = Command{
-		FuncName: funcName,
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
+}
+
+func InvalidCommand(bot *telegrambot.Bot, e Event) {
+	response := telegrambot.SendMessagePayload{
+		ChatId: e.Message.Chat.Id,
+		Text:   "Invalid command",
 	}
 
-	return c, nil
+	responseByteArray, err := json.Marshal(response)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
 	var e Event
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		panic(err)
-		return
 	}
 	if err := r.Body.Close(); err != nil {
 		panic(err)
-		return
 	}
 
 	if err := json.Unmarshal(body, &e); err != nil {
 		panic(err)
-		return
 	}
 
-	response := Response{
-		ChatId: e.Message.Chat.Id,
-	}
+	trimmed := strings.Trim(e.Message.Text, " ")
+	tokens := strings.Split(trimmed, " ")
+	bot.FuncName = tokens[0]
+	bot.Args = tokens[1:]
 
-	t := e.Message.Text
-	c, err := ParseCommand(t)
+	HandleEvent(&bot, e)
 
-	if err != nil {
-		response.Text = "Enter a command"
-	} else {
-		response.Text = fmt.Sprintf("You did %s", c.FuncName)
-	}
-
-	responseByteArray, err := json.Marshal(response)
-
-	resp, err := SendMessage(bytes.NewBuffer(responseByteArray))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
 }
 
 func main() {
