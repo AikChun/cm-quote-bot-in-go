@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aikchun/cm-quote-bot-in-go/cmquote"
 	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/joho/godotenv"
@@ -16,57 +17,29 @@ import (
 	"strings"
 )
 
-type Message struct {
-	Text string `json:"text"`
-	Chat `json:"chat"`
-}
-
-type Chat struct {
-	Id int64 `json:"id"`
-}
-
-type Event struct {
-	Message `json:"message"`
-}
-
-type Response struct {
-	ChatId int64  `json:"chat_id"`
-	Text   string `json:"text"`
-}
-
-func HandleRequest(ctx context.Context, e Event) {
-	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
-
-	response := Response{
-		ChatId: e.Message.Chat.Id,
-		Text:   e.Message.Text,
-	}
-
-	responseByteArray, err := json.Marshal(response)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.SendMessage(bytes.NewBuffer(responseByteArray))
-
-}
-
-func HandleEvent(bot *telegrambot.Bot, e Event) {
+func HandleEvent(bot *telegrambot.Bot, u telegrambot.Update) {
 	switch bot.FuncName {
 	case "/echo":
-		Echo(bot, e)
-	default:
-		// freebsd, openbsd,
-		// plan9, windows...
-		InvalidCommand(bot, e)
+		Echo(bot, u)
+	case "/randomquote":
+		RandomQuote(bot, u)
+	case "/randomquote@cmquotebot":
+		RandomQuote(bot, u)
+	case "/latestquote":
+		LatestQuote(bot, u)
+	case "/latestquote@cmquotebot":
+		LatestQuote(bot, u)
+	case "/savequote":
+		SaveQuote(bot, u)
+	case "/savequote@cmquotebot":
+		SaveQuote(bot, u)
 	}
 
 }
 
-func Echo(bot *telegrambot.Bot, e Event) {
+func Echo(bot *telegrambot.Bot, u telegrambot.Update) {
 	response := telegrambot.SendMessagePayload{
-		ChatId: e.Message.Chat.Id,
+		ChatId: u.Message.Chat.Id,
 		Text:   strings.Join(bot.Args, " "),
 	}
 
@@ -79,10 +52,13 @@ func Echo(bot *telegrambot.Bot, e Event) {
 	bot.SendMessage(bytes.NewBuffer(responseByteArray))
 }
 
-func InvalidCommand(bot *telegrambot.Bot, e Event) {
+func RandomQuote(bot *telegrambot.Bot, u telegrambot.Update) {
+	quote := cmquote.GetRandomQuote()
+
 	response := telegrambot.SendMessagePayload{
-		ChatId: e.Message.Chat.Id,
-		Text:   "Invalid command",
+		ChatId:           u.Message.Chat.Id,
+		Text:             quote.Text,
+		ReplyToMessageID: u.Message.MessageID,
 	}
 
 	responseByteArray, err := json.Marshal(response)
@@ -92,11 +68,64 @@ func InvalidCommand(bot *telegrambot.Bot, e Event) {
 	}
 
 	bot.SendMessage(bytes.NewBuffer(responseByteArray))
+
+}
+
+func LatestQuote(bot *telegrambot.Bot, u telegrambot.Update) {
+	quote := cmquote.GetLatestQuote()
+
+	response := telegrambot.SendMessagePayload{
+		ChatId:           u.Message.Chat.Id,
+		Text:             quote.Text,
+		ReplyToMessageID: u.Message.MessageID,
+	}
+
+	responseByteArray, err := json.Marshal(response)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
+
+}
+
+func SaveQuote(bot *telegrambot.Bot, u telegrambot.Update) {
+	response := telegrambot.SendMessagePayload{
+		ChatId: u.Message.Chat.Id,
+	}
+
+	if err := cmquote.SaveQuote(&u); err != nil {
+		response.Text = err.Error()
+
+		responseByteArray, _ := json.Marshal(response)
+
+		bot.SendMessage(bytes.NewBuffer(responseByteArray))
+		return
+	}
+
+	response.Text = "Saved!"
+
+	responseByteArray, _ := json.Marshal(response)
+
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
+
+}
+
+func HandleRequest(ctx context.Context, u telegrambot.Update) {
+	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
+
+	trimmed := strings.Trim(u.Message.Text, " ")
+	tokens := strings.Split(trimmed, " ")
+	bot.FuncName = tokens[0]
+	bot.Args = tokens[1:]
+
+	HandleEvent(&bot, u)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
-	var e Event
+	var u telegrambot.Update
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
@@ -106,16 +135,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	if err := json.Unmarshal(body, &e); err != nil {
+	if err := json.Unmarshal(body, &u); err != nil {
 		panic(err)
 	}
 
-	trimmed := strings.Trim(e.Message.Text, " ")
+	trimmed := strings.Trim(u.Message.Text, " ")
 	tokens := strings.Split(trimmed, " ")
 	bot.FuncName = tokens[0]
 	bot.Args = tokens[1:]
 
-	HandleEvent(&bot, e)
+	HandleEvent(&bot, u)
 
 }
 
