@@ -30,7 +30,7 @@ func RandomQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
-		Text:             quote.Text,
+		Text:             fmt.Sprintf("\"%s\" - CM", quote.Text),
 		ReplyToMessageID: u.Message.MessageID,
 	}
 
@@ -49,7 +49,7 @@ func LatestQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
-		Text:             quote.Text,
+		Text:             fmt.Sprintf("\"%s\" - CM", quote.Text),
 		ReplyToMessageID: u.Message.MessageID,
 	}
 
@@ -87,7 +87,11 @@ func SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 }
 
 func Help(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
-	helpText := fmt.Sprintf("/randomquote - Get an awesome quote!\n/latestquote - Get the latest addition!\n/savequote - Save a CM Quote\n/help - Get a list of commands")
+	helpText := fmt.Sprintf("" +
+		"/randomquote - Get an awesome quote!\n" +
+		"/latestquote - Get the latest addition!\n" +
+		"/savequote - Save a CM Quote\n" +
+		"/help - Get a list of commands")
 	payload := telegrambot.SendMessagePayload{
 		ChatId: u.Message.Chat.Id,
 		Text:   helpText,
