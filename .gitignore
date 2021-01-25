@@ -17,3 +17,4 @@
 # project-specific
 .env
 tags
+main
