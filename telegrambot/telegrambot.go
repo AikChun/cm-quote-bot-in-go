@@ -5,18 +5,20 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type Bot struct {
-	BaseUrl  string
 	Token    string
-	FuncName string
-	Args     []string
+	Username string
+	Handlers map[string]func(*Bot, *Update, []string)
 }
 
-func NewBot(token string) Bot {
+func NewBot(token string, username string) Bot {
 	return Bot{
-		Token: token,
+		Token:    token,
+		Username: username,
+		Handlers: make(map[string]func(*Bot, *Update, []string)),
 	}
 }
 
@@ -62,4 +64,24 @@ func (bot *Bot) SendMessage(body io.Reader) {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+}
+
+func (bot *Bot) AddHandler(s string, f func(*Bot, *Update, []string)) {
+	bot.Handlers[s] = f
+	ss := fmt.Sprintf("%s%s", s, bot.Username)
+	bot.Handlers[ss] = f
+}
+
+func (bot *Bot) HandleUpdate(u *Update) {
+	s := u.Message.Text
+
+	trimmed := strings.Trim(s, " ")
+	tokens := strings.Split(trimmed, " ")
+	funcName := tokens[0]
+	args := tokens[1:]
+
+	if f, ok := bot.Handlers[funcName]; ok {
+		f(bot, u, args)
+	}
+
 }

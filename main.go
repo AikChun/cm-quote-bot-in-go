@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"github.com/aikchun/cm-quote-bot-in-go/cmquote"
 	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/joho/godotenv"
@@ -14,117 +11,18 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
-func HandleEvent(bot *telegrambot.Bot, u telegrambot.Update) {
-	switch bot.FuncName {
-	case "/echo":
-		Echo(bot, u)
-	case "/randomquote":
-		RandomQuote(bot, u)
-	case "/randomquote@cmquotebot":
-		RandomQuote(bot, u)
-	case "/latestquote":
-		LatestQuote(bot, u)
-	case "/latestquote@cmquotebot":
-		LatestQuote(bot, u)
-	case "/savequote":
-		SaveQuote(bot, u)
-	case "/savequote@cmquotebot":
-		SaveQuote(bot, u)
-	}
-
-}
-
-func Echo(bot *telegrambot.Bot, u telegrambot.Update) {
-	response := telegrambot.SendMessagePayload{
-		ChatId: u.Message.Chat.Id,
-		Text:   strings.Join(bot.Args, " "),
-	}
-
-	responseByteArray, err := json.Marshal(response)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.SendMessage(bytes.NewBuffer(responseByteArray))
-}
-
-func RandomQuote(bot *telegrambot.Bot, u telegrambot.Update) {
-	quote := cmquote.GetRandomQuote()
-
-	response := telegrambot.SendMessagePayload{
-		ChatId:           u.Message.Chat.Id,
-		Text:             quote.Text,
-		ReplyToMessageID: u.Message.MessageID,
-	}
-
-	responseByteArray, err := json.Marshal(response)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.SendMessage(bytes.NewBuffer(responseByteArray))
-
-}
-
-func LatestQuote(bot *telegrambot.Bot, u telegrambot.Update) {
-	quote := cmquote.GetLatestQuote()
-
-	response := telegrambot.SendMessagePayload{
-		ChatId:           u.Message.Chat.Id,
-		Text:             quote.Text,
-		ReplyToMessageID: u.Message.MessageID,
-	}
-
-	responseByteArray, err := json.Marshal(response)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.SendMessage(bytes.NewBuffer(responseByteArray))
-
-}
-
-func SaveQuote(bot *telegrambot.Bot, u telegrambot.Update) {
-	response := telegrambot.SendMessagePayload{
-		ChatId: u.Message.Chat.Id,
-	}
-
-	if err := cmquote.SaveQuote(&u); err != nil {
-		response.Text = err.Error()
-
-		responseByteArray, _ := json.Marshal(response)
-
-		bot.SendMessage(bytes.NewBuffer(responseByteArray))
-		return
-	}
-
-	response.Text = "Saved!"
-
-	responseByteArray, _ := json.Marshal(response)
-
-	bot.SendMessage(bytes.NewBuffer(responseByteArray))
-
+func CreateTelegramBot() *telegrambot.Bot {
+	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"), os.Getenv("BOT_USERNAME"))
+	return &bot
 }
 
 func HandleRequest(ctx context.Context, u telegrambot.Update) {
-	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
-
-	trimmed := strings.Trim(u.Message.Text, " ")
-	tokens := strings.Split(trimmed, " ")
-	bot.FuncName = tokens[0]
-	bot.Args = tokens[1:]
-
-	HandleEvent(&bot, u)
+	HandleTelegramUpdate(&u)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
 	var u telegrambot.Update
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
@@ -139,13 +37,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	trimmed := strings.Trim(u.Message.Text, " ")
-	tokens := strings.Split(trimmed, " ")
-	bot.FuncName = tokens[0]
-	bot.Args = tokens[1:]
+	HandleTelegramUpdate(&u)
+}
 
-	HandleEvent(&bot, u)
-
+func HandleTelegramUpdate(u *telegrambot.Update) {
+	bot := CreateTelegramBot()
+	bot.AddHandler("/echo", Echo)
+	bot.AddHandler("/randomquote", RandomQuote)
+	bot.AddHandler("/latestquote", LatestQuote)
+	bot.AddHandler("/savequote", SaveQuote)
+	bot.AddHandler("/help", Help)
+	bot.HandleUpdate(u)
 }
 
 func main() {
@@ -161,7 +63,6 @@ func main() {
 	}
 
 	if e != "dev" {
-		fmt.Printf("lambda")
 		lambda.Start(HandleRequest)
 	} else {
 		http.HandleFunc("/bot", handler)
