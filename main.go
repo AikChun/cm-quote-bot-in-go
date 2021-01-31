@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
+	"github.com/aikchun/yagotb"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/joho/godotenv"
 	"io"
@@ -14,8 +14,13 @@ import (
 )
 
 func CreateTelegramBot() *telegrambot.Bot {
-	bot := telegrambot.NewBot(os.Getenv("BOT_TOKEN"), os.Getenv("BOT_USERNAME"))
-	return &bot
+	bot, err := telegrambot.NewBot(os.Getenv("BOT_TOKEN"))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return bot
 }
 
 func HandleRequest(ctx context.Context, u telegrambot.Update) {

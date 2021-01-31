@@ -3,7 +3,7 @@ package cmquote
 import (
 	"errors"
 	"github.com/aikchun/cm-quote-bot-in-go/quotes"
-	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
+	"github.com/aikchun/yagotb"
 	"math/rand"
 	"os"
 	"strconv"

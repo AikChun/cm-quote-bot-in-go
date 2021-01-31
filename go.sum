@@ -1,5 +1,13 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/aikchun/yagotb v0.0.0-20210131082345-d9271525431a h1:bhZtHTVFE92ID0jkhe7YpGNudkIBlGRkFMbbmXzSfM8=
+github.com/aikchun/yagotb v0.0.0-20210131082345-d9271525431a/go.mod h1:N4Es2g/n8eIj3bmRAI8yUiZDa+6X7JRyLowBOOdLJxw=
+github.com/aikchun/yagotb v0.0.0-20210131083801-67635e3ae559 h1:J7z6VsKzNNP53rfJyMoVTsxFb1XDKhVcYxiuI/AYiiE=
+github.com/aikchun/yagotb v0.0.0-20210131083801-67635e3ae559/go.mod h1:N4Es2g/n8eIj3bmRAI8yUiZDa+6X7JRyLowBOOdLJxw=
+github.com/aikchun/yagotb v0.0.0-20210131091459-181f443f67d5 h1:uoffAZYjB+S38WpZwL6s3SV+GDydWinvkkPlL+Vhu6U=
+github.com/aikchun/yagotb v0.0.0-20210131091459-181f443f67d5/go.mod h1:N4Es2g/n8eIj3bmRAI8yUiZDa+6X7JRyLowBOOdLJxw=
+github.com/aikchun/yagotb v0.0.1 h1:squApU0M+pMgyq0zbp5fs4tF09YBf2sOoxuz/fW5m9A=
+github.com/aikchun/yagotb v0.0.1/go.mod h1:N4Es2g/n8eIj3bmRAI8yUiZDa+6X7JRyLowBOOdLJxw=
 github.com/aws/aws-lambda-go v1.22.0 h1:X7BKqIdfoJcbsEIi+Lrt5YjX1HnZexIbNWOQgkYKgfE=
 github.com/aws/aws-lambda-go v1.22.0/go.mod h1:jJmlefzPfGnckuHdXX7/80O3BvUUi12XOkbv4w9SGLU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

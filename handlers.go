@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aikchun/cm-quote-bot-in-go/cmquote"
-	"github.com/aikchun/cm-quote-bot-in-go/telegrambot"
+	"github.com/aikchun/yagotb"
 	"log"
 	"strings"
 )
