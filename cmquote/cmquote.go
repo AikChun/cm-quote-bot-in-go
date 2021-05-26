@@ -55,7 +55,7 @@ func GetLatestQuote() quotes.Quote {
 func SaveQuote(u *telegrambot.Update) error {
 	message := u.Message.ReplyToMessage
 	if message == nil {
-		return errors.New("Reply to a message to save a quote")
+		return errors.New("reply to a message to save a quote")
 	}
 	from := message.From
 	text := message.Text
@@ -65,7 +65,7 @@ func SaveQuote(u *telegrambot.Update) error {
 	id, _ := strconv.ParseInt(cmID, 10, 64)
 
 	if from.ID != id {
-		return errors.New("This person is not CM")
+		return errors.New("this person is not CM")
 	}
 
 	q := quotes.Quote{
