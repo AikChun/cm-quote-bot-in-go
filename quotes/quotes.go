@@ -1,16 +1,18 @@
 package quotes
 
 import (
-	"github.com/aikchun/cm-quote-bot-in-go/db"
 	"time"
+
+	"github.com/aikchun/cm-quote-bot-in-go/db"
 )
 
 type Quote struct {
-	tableName struct{}  `pg:"quote_quote"`
-	ID        int64     `json:"id"`
-	Text      string    `json:"text"`
-	UserID    int64     `json:"userId"`
-	CreatedAt time.Time `json:"created_at"`
+	tableName     struct{}  `pg:"quote_quote"`
+	ID            int64     `json:"id"`
+	Text          string    `json:"text"`
+	UserID        int64     `json:"userId"`
+	CreatedAt     time.Time `json:"created_at"`
+	MessageSentAt time.Time `json:"message_sent_at"`
 }
 
 func GetUserQuotes(q *[]Quote, user_id int64) error {

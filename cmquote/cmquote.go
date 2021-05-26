@@ -2,12 +2,13 @@ package cmquote
 
 import (
 	"errors"
-	"github.com/aikchun/cm-quote-bot-in-go/quotes"
-	"github.com/aikchun/yagotb"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/aikchun/cm-quote-bot-in-go/quotes"
+	telegrambot "github.com/aikchun/yagotb"
 )
 
 func PickQuoteAtRandom(q []quotes.Quote) quotes.Quote {
