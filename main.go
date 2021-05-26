@@ -21,6 +21,12 @@ func CreateTelegramBot() *telegrambot.Bot {
 		panic(err)
 	}
 
+	bot.AddHandler("/echo", Echo)
+	bot.AddHandler("/randomquote", RandomQuote)
+	bot.AddHandler("/latestquote", LatestQuote)
+	bot.AddHandler("/savequote", SaveQuote)
+	bot.AddHandler("/help", Help)
+
 	return bot
 }
 
@@ -48,11 +54,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func HandleTelegramUpdate(u *telegrambot.Update) {
 	bot := CreateTelegramBot()
-	bot.AddHandler("/echo", Echo)
-	bot.AddHandler("/randomquote", RandomQuote)
-	bot.AddHandler("/latestquote", LatestQuote)
-	bot.AddHandler("/savequote", SaveQuote)
-	bot.AddHandler("/help", Help)
 	bot.HandleUpdate(u)
 }
 
