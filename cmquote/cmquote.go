@@ -59,7 +59,7 @@ func SaveQuote(u *telegrambot.Update) error {
 	}
 	from := message.From
 	text := message.Text
-	date := message.Date
+	date := time.Unix(message.Date, 0)
 
 	cmID := os.Getenv("CM_ID")
 	id, _ := strconv.ParseInt(cmID, 10, 64)
