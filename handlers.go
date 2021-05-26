@@ -34,10 +34,18 @@ func Echo(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 func RandomQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 	quote := cmquote.GetRandomQuote()
 
+	var targetMessageID int64
+
+	if u.Message.ReplyToMessage != nil {
+		targetMessageID = u.Message.ReplyToMessage.MessageID
+	} else {
+		targetMessageID = u.Message.MessageID
+	}
+
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
 		Text:             FormatQuote(quote.Text, quote.MessageSentAt.Year()),
-		ReplyToMessageID: u.Message.MessageID,
+		ReplyToMessageID: targetMessageID,
 	}
 
 	responseByteArray, err := json.Marshal(response)
