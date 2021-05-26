@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/aikchun/yagotb"
-	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/joho/godotenv"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	telegrambot "github.com/AikChun/yagotb"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/joho/godotenv"
 )
 
 func CreateTelegramBot() *telegrambot.Bot {

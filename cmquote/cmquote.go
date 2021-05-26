@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	telegrambot "github.com/AikChun/yagotb"
 	"github.com/aikchun/cm-quote-bot-in-go/quotes"
-	telegrambot "github.com/aikchun/yagotb"
 )
 
 func PickQuoteAtRandom(q []quotes.Quote) quotes.Quote {
@@ -59,6 +59,7 @@ func SaveQuote(u *telegrambot.Update) error {
 	}
 	from := message.From
 	text := message.Text
+	date := message.Date
 
 	cmID := os.Getenv("CM_ID")
 	id, _ := strconv.ParseInt(cmID, 10, 64)
@@ -68,9 +69,10 @@ func SaveQuote(u *telegrambot.Update) error {
 	}
 
 	q := quotes.Quote{
-		Text:      text,
-		UserID:    id,
-		CreatedAt: time.Now(),
+		Text:          text,
+		UserID:        id,
+		CreatedAt:     time.Now(),
+		MessageSentAt: date,
 	}
 
 	return quotes.SaveQuote(&q)

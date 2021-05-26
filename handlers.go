@@ -7,9 +7,14 @@ import (
 	"log"
 	"strings"
 
+	telegrambot "github.com/AikChun/yagotb"
 	"github.com/aikchun/cm-quote-bot-in-go/cmquote"
-	telegrambot "github.com/aikchun/yagotb"
 )
+
+func FormatQuote(text string, year int) string {
+	return fmt.Sprintf("\"%s\" - CM %d", text, year)
+
+}
 
 func Echo(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 	response := telegrambot.SendMessagePayload{
@@ -31,7 +36,7 @@ func RandomQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
-		Text:             fmt.Sprintf("\"%s\" - CM %d", quote.Text, quote.MessageSentAt.Year()),
+		Text:             FormatQuote(quote.Text, quote.MessageSentAt.Year()),
 		ReplyToMessageID: u.Message.MessageID,
 	}
 
@@ -50,7 +55,7 @@ func LatestQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
-		Text:             fmt.Sprintf("\"%s\" - CM", quote.Text),
+		Text:             FormatQuote(quote.Text, quote.MessageSentAt.Year()),
 		ReplyToMessageID: u.Message.MessageID,
 	}
 
