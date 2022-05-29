@@ -29,6 +29,13 @@ func GetUserLatestQuote(q *Quote, user_id int64) error {
 	return d.Model(q).Where("user_id = ?", user_id).Order("created_at DESC").Limit(1).Select()
 }
 
+func GetQuotesByText(q *[]Quote, user_id int64, t string) error {
+	d := db.NewDB()
+	defer d.Close()
+
+	return d.Model(q).Where("user_id = ?", user_id).Where("LOWER(text) LIKE ?", "%"+t+"%").Select()
+}
+
 func SaveQuote(q *Quote) error {
 	d := db.NewDB()
 	defer d.Close()
