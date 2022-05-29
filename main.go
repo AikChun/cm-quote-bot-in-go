@@ -23,8 +23,9 @@ func CreateTelegramBot() *telegrambot.Bot {
 
 	bot.AddHandler("/echo", Echo)
 	bot.AddHandler("/randomquote", RandomQuote)
-	bot.AddHandler("/latestquote", LatestQuote)
 	bot.AddHandler("/savequote", SaveQuote)
+	bot.AddHandler("/latestquote", LatestQuote)
+	bot.AddHandler("/crisis", RandomCrisisQuote)
 	bot.AddHandler("/help", Help)
 
 	return bot
@@ -72,7 +73,7 @@ func main() {
 	if e != "dev" {
 		lambda.Start(HandleRequest)
 	} else {
-		http.HandleFunc("/bot", handler)
+		http.HandleFunc("/", handler)
 		log.Fatal(http.ListenAndServe(":8080", nil))
 	}
 

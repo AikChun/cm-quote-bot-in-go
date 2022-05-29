@@ -77,6 +77,25 @@ func LatestQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 
 }
 
+func RandomCrisisQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
+	quote := cmquote.GetRandomCrisisQuote()
+
+	response := telegrambot.SendMessagePayload{
+		ChatId:           u.Message.Chat.Id,
+		Text:             FormatQuote(quote.Text, quote.MessageSentAt.Year()),
+		ReplyToMessageID: u.Message.MessageID,
+	}
+
+	responseByteArray, err := json.Marshal(response)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bot.SendMessage(bytes.NewBuffer(responseByteArray))
+
+}
+
 func SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 	response := telegrambot.SendMessagePayload{
 		ChatId:           u.Message.Chat.Id,
@@ -103,8 +122,9 @@ func SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 func Help(bot *telegrambot.Bot, u *telegrambot.Update, args []string) {
 	helpText := fmt.Sprintf("" +
 		"/randomquote - Get an awesome quote!\n" +
-		"/latestquote - Get the latest addition!\n" +
 		"/savequote - Save a CM Quote\n" +
+		"/latestquote - Get the latest addition!\n" +
+		"/crisis - CRISIS!!!\n" +
 		"/help - Get a list of commands")
 	payload := telegrambot.SendMessagePayload{
 		ChatId: u.Message.Chat.Id,

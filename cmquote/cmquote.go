@@ -52,6 +52,22 @@ func GetLatestQuote() quotes.Quote {
 	return q
 }
 
+func GetRandomCrisisQuote() quotes.Quote {
+	var q []quotes.Quote
+	cmID := os.Getenv("CM_ID")
+	id, err := strconv.ParseInt(cmID, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := quotes.GetQuotesByText(&q, id, "crisis"); err != nil {
+		panic(err)
+	}
+
+	return PickQuoteAtRandom(q)
+
+}
+
 func SaveQuote(u *telegrambot.Update) error {
 	message := u.Message.ReplyToMessage
 	if message == nil {
