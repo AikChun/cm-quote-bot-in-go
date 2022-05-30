@@ -23,7 +23,7 @@ func (qs *QuoteService) GetUserQuotes() ([]quote.Quote, error) {
 
 func (qs *QuoteService) GetUserLatestQuote() (quote.Quote, error) {
 	var q quote.Quote
-	err := qs.DB.Model(&q).Where("user_id = ?", qs.UserID).Order("created_at DESC").Limit(1).Select()
+	err := qs.DB.Model(&q).Where("user_id = ?", qs.UserID).Order("message_sent_at DESC").Limit(1).Select()
 	return q, err
 }
 
