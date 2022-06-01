@@ -104,6 +104,11 @@ func (qc *QuoteController) SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update
 		err = errors.New("reply to a message to save a quote")
 	}
 
+	response := telegrambot.SendMessagePayload{
+		ChatId:           u.Message.Chat.Id,
+		ReplyToMessageID: u.Message.MessageID,
+	}
+
 	from := message.From
 	text := message.Text
 	date := time.Unix(message.Date, 0)
@@ -111,7 +116,12 @@ func (qc *QuoteController) SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update
 	id := qc.QS.GetUserID()
 
 	if from.ID != id {
-		err = errors.New("this person is not CM")
+		response.Text = "this person is not CM"
+
+		responseByteArray, _ := json.Marshal(response)
+
+		bot.SendMessage(bytes.NewBuffer(responseByteArray))
+		return
 	}
 
 	q := &quote.Quote{
@@ -122,11 +132,6 @@ func (qc *QuoteController) SaveQuote(bot *telegrambot.Bot, u *telegrambot.Update
 	}
 
 	err = qc.QS.SaveQuote(q)
-
-	response := telegrambot.SendMessagePayload{
-		ChatId:           u.Message.Chat.Id,
-		ReplyToMessageID: u.Message.MessageID,
-	}
 
 	if err != nil {
 		response.Text = err.Error()
